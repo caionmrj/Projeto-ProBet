@@ -1,12 +1,20 @@
 'use client';
 
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSearch } from '@/lib/search/search-context';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Trophy } from 'lucide-react';
 
 export default function SearchPage() {
+    return (
+        <Suspense fallback={<div>Carregando busca...</div>}>
+            <SearchPageContent />
+        </Suspense>
+    );
+}
+
+function SearchPageContent() {
     const searchParams = useSearchParams();
     const { searchQuery, setIsSearching } = useSearch();
     const [results, setResults] = useState<any[]>([]);
@@ -87,4 +95,4 @@ export default function SearchPage() {
             )}
         </div>
     );
-} 
+}
