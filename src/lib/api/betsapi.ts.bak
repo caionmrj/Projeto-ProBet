@@ -1,0 +1,830 @@
+// Tipos para a API BetsAPI2
+export interface Sport {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+export interface League {
+  id: string;
+  name: string;
+  logo: string;
+  cc: string; // Código do país
+}
+
+export interface Match {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  date: string;
+  time: string;
+  league: string;
+  leagueId: string;
+  bookmaker: string; // Casa de apostas
+  odds: {
+    home: number;
+    draw: number;
+    away: number;
+  };
+}
+
+export interface MatchDetail extends Match {
+  status: string;
+  score?: {
+    home: number;
+    away: number;
+  };
+  stats?: any;
+  events?: any[];
+}
+
+// Classe para interagir com a API BetsAPI2
+export class BetsAPI {
+  private apiKey: string;
+  private baseUrl: string = 'https://betsapi2.p.rapidapi.com';
+  
+  constructor() {
+    // Usar a chave da API fornecida pelo usuário
+    this.apiKey = '4540f71550mshb151d188d6d5a8cp107b7fjsnca84ba8e4756';
+    if (!this.apiKey) {
+      console.warn('API Key não encontrada. Usando apenas dados mockados.');
+    }
+  }
+  
+  // Método para fazer requisições à API
+  private async fetchAPI(endpoint: string, params: Record<string, string> = {}) {
+    const url = new URL(`${this.baseUrl}${endpoint}`);
+    
+    // Adicionar parâmetros à URL
+    Object.keys(params).forEach(key => {
+      url.searchParams.append(key, params[key]);
+    });
+    
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': this.apiKey,
+          'X-RapidAPI-Host': 'betsapi2.p.rapidapi.com'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching from BetsAPI:', error);
+      throw error;
+    }
+  }
+  
+  // Obter esportes disponíveis
+  async getSports(): Promise<Sport[]> {
+    // Nota: A API BetsAPI2 não tem um endpoint específico para listar esportes
+    // Estamos usando dados mockados por enquanto, mas isso seria substituído por dados reais
+    // quando tivermos acesso à API completa
+    
+    // Dados mockados para desenvolvimento
+    return [
+      { id: 'soccer', name: 'Futebol', icon: '⚽' },
+      { id: 'basketball', name: 'Basquete', icon: '🏀' },
+      { id: 'tennis', name: 'Tênis', icon: '🎾' },
+      { id: 'volleyball', name: 'Vôlei', icon: '🏐' },
+      { id: 'mma', name: 'MMA', icon: '🥊' },
+      { id: 'esports', name: 'eSports', icon: '🎮' },
+    ];
+  }
+  
+  // Obter ligas por esporte
+  async getLeaguesBySport(sportId: string): Promise<League[]> {
+    try {
+      // Endpoint para obter ligas por esporte
+      // Nota: Precisamos ajustar isso com base na documentação real da API
+      const data = await this.fetchAPI('/bet365/inplay_filter', {
+        sport_id: sportId
+      });
+      
+      // Processar os dados da resposta para o formato que precisamos
+      // Isso precisará ser ajustado com base na estrutura real da resposta da API
+      return data.results.map((item: any) => ({
+        id: item.league_id,
+        name: item.league_name,
+        logo: '', // A API pode não fornecer logos, precisamos adicionar isso manualmente
+        cc: item.country_code || ''
+      }));
+    } catch (error) {
+      console.error(`Error fetching leagues for sport ${sportId}:`, error);
+      
+      // Fallback para dados mockados em caso de erro
+      return this.getMockLeaguesBySport(sportId);
+    }
+  }
+  
+  // Obter partidas por liga
+  async getMatchesByLeague(leagueId: string): Promise<Match[]> {
+    try {
+      // Endpoint para obter partidas por liga
+      const data = await this.fetchAPI('/bet365/upcoming', {
+        league_id: leagueId
+      });
+      
+      // Processar os dados da resposta para o formato que precisamos
+      return data.results.map((item: any) => ({
+        id: item.id,
+        homeTeam: item.home.name,
+        awayTeam: item.away.name,
+        date: new Date(item.time * 1000).toLocaleDateString(),
+        time: new Date(item.time * 1000).toLocaleTimeString(),
+        league: item.league.name,
+        leagueId: item.league.id,
+        bookmaker: 'Bet365', // A API BetsAPI2 é focada em Bet365
+        odds: {
+          home: item.odds?.['1'] || 0,
+          draw: item.odds?.['X'] || 0,
+          away: item.odds?.['2'] || 0
+        }
+      }));
+    } catch (error) {
+      console.error(`Error fetching matches for league ${leagueId}:`, error);
+      
+      // Fallback para dados mockados em caso de erro
+      return this.getMockMatchesByLeague(leagueId);
+    }
+  }
+  
+  // Obter próximos jogos (para a página Home)
+  async getUpcomingMatches(): Promise<Match[]> {
+    // Verificar se a chave da API está disponível
+    if (!this.apiKey) {
+      console.log("API Key não disponível, usando dados mockados para futebol.");
+      return this.getMockUpcomingMatches();
+    }
+    
+    try {
+      console.log("Buscando próximos jogos de futebol da API real com a chave...");
+      
+      // Endpoint para obter próximos jogos
+      const data = await this.fetchAPI("/bet365/upcoming", {
+        sport_id: "1", // ID para futebol na BetsAPI v2
+        // day: "today" // Parâmetro 'day' pode não ser suportado ou necessário, verificar documentação
+      });
+      
+      if (!data || !data.results || !Array.isArray(data.results)) {
+        console.error("Formato de resposta inválido da API:", data);
+        throw new Error("Formato de resposta inválido");
+      }
+      
+      console.log(`Encontrados ${data.results.length} jogos na API real`);
+      
+      // Processar os dados da resposta para o formato que precisamos
+      const matches = data.results.map((item: any) => ({
+        id: item.id,
+        homeTeam: item.home?.name || "Time Casa",
+        awayTeam: item.away?.name || "Time Visitante",
+        date: new Date(item.time * 1000).toLocaleDateString(),
+        time: new Date(item.time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // Formatar hora
+        league: item.league?.name || "Liga",
+        leagueId: item.league?.id || "0",
+        bookmaker: "Bet365", // A API BetsAPI2 é focada em Bet365
+        odds: {
+          // Acessar odds corretamente (pode variar na API real)
+          home: parseFloat(item.odds?.['1_1']?.handicap_od) || 0, // Exemplo, ajustar conforme API
+          draw: parseFloat(item.odds?.['1_2']?.handicap_od) || 0, // Exemplo, ajustar conforme API
+          away: parseFloat(item.odds?.['1_3']?.handicap_od) || 0  // Exemplo, ajustar conforme API
+        }
+      }));
+      
+      if (matches.length > 0) {
+        console.log("Dados reais obtidos com sucesso:", matches[0]);
+        return matches;
+      } else {
+        console.warn("Nenhum jogo encontrado na API real, usando fallback");
+        throw new Error("Nenhum jogo encontrado");
+      }
+    } catch (error) {
+      console.error("Error fetching upcoming matches:", error);
+      
+      // Fallback para dados mockados em caso de erro
+      console.log("Usando dados mockados como fallback para futebol");
+      return this.getMockUpcomingMatches();
+    }
+  }
+  
+  // Obter detalhes de uma partida específica
+  async getMatchDetails(matchId: string): Promise<MatchDetail> {
+    try {
+      // Endpoint para obter detalhes de uma partida
+      const data = await this.fetchAPI('/bet365/event', {
+        event_id: matchId
+      });
+      
+      // Processar os dados da resposta para o formato que precisamos
+      const match = data.results;
+      
+      return {
+        id: match.id,
+        homeTeam: match.home.name,
+        awayTeam: match.away.name,
+        date: new Date(match.time * 1000).toLocaleDateString(),
+        time: new Date(match.time * 1000).toLocaleTimeString(),
+        league: match.league.name,
+        leagueId: match.league.id,
+        bookmaker: 'Bet365', // A API BetsAPI2 é focada em Bet365
+        status: match.status,
+        score: match.score ? {
+          home: match.score.home,
+          away: match.score.away
+        } : undefined,
+        odds: {
+          home: match.odds?.['1'] || 0,
+          draw: match.odds?.['X'] || 0,
+          away: match.odds?.['2'] || 0
+        },
+        stats: match.stats,
+        events: match.events
+      };
+    } catch (error) {
+      console.error(`Error fetching details for match ${matchId}:`, error);
+      
+      // Fallback para dados mockados em caso de erro
+      return this.getMockMatchDetails(matchId);
+    }
+  }
+  
+  // Métodos para dados mockados (fallback)
+  private getMockLeaguesBySport(sportId: string): League[] {
+    console.log(`[getMockLeaguesBySport] Recebido sportId: '${sportId}'`);
+    const mockLeagues: Record<string, League[]> = {
+      'soccer': [
+        { id: 'brasileirao', name: 'Brasileirão Série A', logo: '🇧🇷', cc: 'BR' },
+        { id: 'premier-league', name: 'Premier League', logo: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', cc: 'GB' },
+        { id: 'la-liga', name: 'La Liga', logo: '🇪🇸', cc: 'ES' },
+        { id: 'bundesliga', name: 'Bundesliga', logo: '🇩🇪', cc: 'DE' },
+        { id: 'serie-a', name: 'Serie A', logo: '🇮🇹', cc: 'IT' },
+        { id: 'ligue-1', name: 'Ligue 1', logo: '🇫🇷', cc: 'FR' },
+      ],
+      'basketball': [
+        { id: 'nba', name: 'NBA', logo: '🏀', cc: 'US' },
+        { id: 'euroleague', name: 'Euroliga', logo: '🇪🇺', cc: 'EU' },
+        { id: 'nbb', name: 'NBB (Brasil)', logo: '🇧🇷', cc: 'BR' },
+        { id: 'acb', name: 'Liga ACB (Espanha)', logo: '🇪🇸', cc: 'ES' },
+        { id: 'ncaa', name: 'NCAA (Universitário EUA)', logo: '🇺🇸', cc: 'US' },
+      ],
+      'tennis': [
+        { id: 'atp', name: 'ATP Tour', logo: '🎾', cc: 'INT' },
+        { id: 'wta', name: 'WTA Tour', logo: '🎾', cc: 'INT' },
+        { id: 'grand-slam', name: 'Grand Slam', logo: '🏆', cc: 'INT' },
+        { id: 'davis-cup', name: 'Copa Davis', logo: '🏆', cc: 'INT' },
+        { id: 'atp-masters', name: 'ATP Masters 1000', logo: '🎾', cc: 'INT' },
+      ],
+      'volleyball': [
+        { id: 'superliga', name: 'Superliga (Brasil)', logo: '🏐', cc: 'BR' },
+        { id: 'champions-league', name: 'Champions League', logo: '🇪🇺', cc: 'EU' },
+        { id: 'world-championship', name: 'Campeonato Mundial', logo: '🌎', cc: 'INT' },
+        { id: 'nations-league', name: 'Liga das Nações', logo: '🏐', cc: 'INT' },
+      ],
+      'mma': [
+        { id: 'ufc', name: 'UFC', logo: '🥊', cc: 'US' },
+        { id: 'bellator', name: 'Bellator', logo: '🥊', cc: 'US' },
+        { id: 'one-championship', name: 'ONE Championship', logo: '🥊', cc: 'SG' },
+        { id: 'pfl', name: 'PFL', logo: '🥊', cc: 'US' },
+      ],
+      'esports': [
+        { id: 'lol', name: 'League of Legends', logo: '🎮', cc: 'INT' },
+        { id: 'csgo', name: 'Counter-Strike 2', logo: '🎮', cc: 'INT' },
+        { id: 'dota2', name: 'Dota 2', logo: '🎮', cc: 'INT' },
+        { id: 'valorant', name: 'Valorant', logo: '🎮', cc: 'INT' },
+        { id: 'fifa', name: 'EA FC 24', logo: '⚽', cc: 'INT' },
+        { id: 'rainbow-six', name: 'Rainbow Six Siege', logo: '🎮', cc: 'INT' },
+      ],
+    };
+    
+    const leagues = mockLeagues[sportId] || [];
+    console.log(`[getMockLeaguesBySport] Retornando ${leagues.length} ligas para '${sportId}'.`);
+    return leagues;
+  }
+  
+  private getMockMatchesByLeague(leagueId: string): Match[] {
+    const mockMatches: Record<string, Match[]> = {
+      // Futebol
+      'brasileirao': [
+        {
+          id: '1',
+          homeTeam: 'Palmeiras',
+          awayTeam: 'Flamengo',
+          date: '19/05/2025',
+          time: '19:30',
+          league: 'Brasileirão Série A',
+          leagueId: 'brasileirao',
+          bookmaker: 'Bet365',
+          odds: { home: 2.20, draw: 3.10, away: 3.10 }
+        },
+        {
+          id: '2',
+          homeTeam: 'Internacional',
+          awayTeam: 'Botafogo',
+          date: '19/05/2025',
+          time: '21:00',
+          league: 'Brasileirão Série A',
+          leagueId: 'brasileirao',
+          bookmaker: 'Bet365',
+          odds: { home: 2.10, draw: 3.60, away: 3.60 }
+        },
+      ],
+      'premier-league': [
+        {
+          id: '3',
+          homeTeam: 'Manchester City',
+          awayTeam: 'Liverpool',
+          date: '20/05/2025',
+          time: '16:00',
+          league: 'Premier League',
+          leagueId: 'premier-league',
+          bookmaker: 'Bet365',
+          odds: { home: 1.90, draw: 3.50, away: 3.80 }
+        },
+        {
+          id: '31',
+          homeTeam: 'Arsenal',
+          awayTeam: 'Chelsea',
+          date: '21/05/2025',
+          time: '16:00',
+          league: 'Premier League',
+          leagueId: 'premier-league',
+          bookmaker: 'Bet365',
+          odds: { home: 2.10, draw: 3.30, away: 3.50 }
+        },
+      ],
+      'la-liga': [
+        {
+          id: '4',
+          homeTeam: 'Real Madrid',
+          awayTeam: 'Barcelona',
+          date: '20/05/2025',
+          time: '21:00',
+          league: 'La Liga',
+          leagueId: 'la-liga',
+          bookmaker: 'Bet365',
+          odds: { home: 3.00, draw: 3.60, away: 3.60 }
+        },
+        {
+          id: '41',
+          homeTeam: 'Atlético Madrid',
+          awayTeam: 'Sevilla',
+          date: '21/05/2025',
+          time: '19:00',
+          league: 'La Liga',
+          leagueId: 'la-liga',
+          bookmaker: 'Bet365',
+          odds: { home: 1.85, draw: 3.40, away: 4.20 }
+        },
+      ],
+      'bundesliga': [
+        {
+          id: '5',
+          homeTeam: 'Bayern Munich',
+          awayTeam: 'Borussia Dortmund',
+          date: '21/05/2025',
+          time: '15:30',
+          league: 'Bundesliga',
+          leagueId: 'bundesliga',
+          bookmaker: 'Bet365',
+          odds: { home: 1.80, draw: 3.70, away: 4.20 }
+        },
+        {
+          id: '51',
+          homeTeam: 'RB Leipzig',
+          awayTeam: 'Bayer Leverkusen',
+          date: '22/05/2025',
+          time: '15:30',
+          league: 'Bundesliga',
+          leagueId: 'bundesliga',
+          bookmaker: 'Bet365',
+          odds: { home: 2.20, draw: 3.40, away: 3.10 }
+        },
+      ],
+      'serie-a': [
+        {
+          id: '6',
+          homeTeam: 'Inter Milan',
+          awayTeam: 'Juventus',
+          date: '22/05/2025',
+          time: '20:45',
+          league: 'Serie A',
+          leagueId: 'serie-a',
+          bookmaker: 'Bet365',
+          odds: { home: 2.40, draw: 3.20, away: 2.90 }
+        },
+        {
+          id: '61',
+          homeTeam: 'AC Milan',
+          awayTeam: 'Napoli',
+          date: '23/05/2025',
+          time: '20:45',
+          league: 'Serie A',
+          leagueId: 'serie-a',
+          bookmaker: 'Bet365',
+          odds: { home: 2.10, draw: 3.30, away: 3.40 }
+        },
+      ],
+      'ligue-1': [
+        {
+          id: '7',
+          homeTeam: 'PSG',
+          awayTeam: 'Marseille',
+          date: '23/05/2025',
+          time: '21:00',
+          league: 'Ligue 1',
+          leagueId: 'ligue-1',
+          bookmaker: 'Bet365',
+          odds: { home: 1.50, draw: 4.20, away: 6.00 }
+        },
+        {
+          id: '71',
+          homeTeam: 'Lyon',
+          awayTeam: 'Monaco',
+          date: '24/05/2025',
+          time: '17:00',
+          league: 'Ligue 1',
+          leagueId: 'ligue-1',
+          bookmaker: 'Bet365',
+          odds: { home: 2.30, draw: 3.40, away: 2.90 }
+        },
+      ],
+      
+      // Basquete
+      'nba': [
+        {
+          id: '8',
+          homeTeam: 'Los Angeles Lakers',
+          awayTeam: 'Boston Celtics',
+          date: '20/05/2025',
+          time: '20:00',
+          league: 'NBA',
+          leagueId: 'nba',
+          bookmaker: 'Bet365',
+          odds: { home: 1.90, draw: 0, away: 1.90 }
+        },
+        {
+          id: '81',
+          homeTeam: 'Golden State Warriors',
+          awayTeam: 'Miami Heat',
+          date: '21/05/2025',
+          time: '19:30',
+          league: 'NBA',
+          leagueId: 'nba',
+          bookmaker: 'Bet365',
+          odds: { home: 1.75, draw: 0, away: 2.10 }
+        },
+      ],
+      'euroleague': [
+        {
+          id: '9',
+          homeTeam: 'Real Madrid',
+          awayTeam: 'CSKA Moscow',
+          date: '22/05/2025',
+          time: '20:00',
+          league: 'Euroliga',
+          leagueId: 'euroleague',
+          bookmaker: 'Bet365',
+          odds: { home: 1.85, draw: 0, away: 1.95 }
+        },
+        {
+          id: '91',
+          homeTeam: 'Barcelona',
+          awayTeam: 'Fenerbahçe',
+          date: '23/05/2025',
+          time: '20:45',
+          league: 'Euroliga',
+          leagueId: 'euroleague',
+          bookmaker: 'Bet365',
+          odds: { home: 1.70, draw: 0, away: 2.15 }
+        },
+      ],
+      'nbb': [
+        {
+          id: '10',
+          homeTeam: 'Flamengo',
+          awayTeam: 'Franca',
+          date: '21/05/2025',
+          time: '19:00',
+          league: 'NBB (Brasil)',
+          leagueId: 'nbb',
+          bookmaker: 'Bet365',
+          odds: { home: 1.80, draw: 0, away: 2.00 }
+        },
+      ],
+      
+      // Tênis
+      'atp': [
+        {
+          id: '11',
+          homeTeam: 'Carlos Alcaraz',
+          awayTeam: 'Novak Djokovic',
+          date: '20/05/2025',
+          time: '15:00',
+          league: 'ATP Tour',
+          leagueId: 'atp',
+          bookmaker: 'Bet365',
+          odds: { home: 1.90, draw: 0, away: 1.90 }
+        },
+        {
+          id: '111',
+          homeTeam: 'Rafael Nadal',
+          awayTeam: 'Daniil Medvedev',
+          date: '21/05/2025',
+          time: '13:30',
+          league: 'ATP Tour',
+          leagueId: 'atp',
+          bookmaker: 'Bet365',
+          odds: { home: 2.10, draw: 0, away: 1.75 }
+        },
+      ],
+      'wta': [
+        {
+          id: '12',
+          homeTeam: 'Iga Swiatek',
+          awayTeam: 'Aryna Sabalenka',
+          date: '22/05/2025',
+          time: '14:00',
+          league: 'WTA Tour',
+          leagueId: 'wta',
+          bookmaker: 'Bet365',
+          odds: { home: 1.65, draw: 0, away: 2.25 }
+        },
+      ],
+      'grand-slam': [
+        {
+          id: '13',
+          homeTeam: 'Carlos Alcaraz',
+          awayTeam: 'Jannik Sinner',
+          date: '25/05/2025',
+          time: '15:00',
+          league: 'Roland Garros',
+          leagueId: 'grand-slam',
+          bookmaker: 'Bet365',
+          odds: { home: 1.95, draw: 0, away: 1.85 }
+        },
+      ],
+      
+      // Vôlei
+      'superliga': [
+        {
+          id: '14',
+          homeTeam: 'Sesi Bauru',
+          awayTeam: 'Minas Tênis Clube',
+          date: '23/05/2025',
+          time: '19:00',
+          league: 'Superliga (Brasil)',
+          leagueId: 'superliga',
+          bookmaker: 'Bet365',
+          odds: { home: 1.75, draw: 0, away: 2.10 }
+        },
+      ],
+      
+      // MMA
+      'ufc': [
+        {
+          id: '15',
+          homeTeam: 'Alex Pereira',
+          awayTeam: 'Jamahal Hill',
+          date: '25/05/2025',
+          time: '23:00',
+          league: 'UFC',
+          leagueId: 'ufc',
+          bookmaker: 'Bet365',
+          odds: { home: 1.60, draw: 0, away: 2.40 }
+        },
+        {
+          id: '151',
+          homeTeam: 'Islam Makhachev',
+          awayTeam: 'Dustin Poirier',
+          date: '25/05/2025',
+          time: '22:00',
+          league: 'UFC',
+          leagueId: 'ufc',
+          bookmaker: 'Bet365',
+          odds: { home: 1.40, draw: 0, away: 2.90 }
+        },
+      ],
+      
+      // E-Sports
+      'lol': [
+        {
+          id: '16',
+          homeTeam: 'T1',
+          awayTeam: 'Gen.G',
+          date: '21/05/2025',
+          time: '10:00',
+          league: 'League of Legends - LCK',
+          leagueId: 'lol',
+          bookmaker: 'Bet365',
+          odds: { home: 1.85, draw: 0, away: 1.95 }
+        },
+        {
+          id: '161',
+          homeTeam: 'LOUD',
+          awayTeam: 'paiN Gaming',
+          date: '22/05/2025',
+          time: '18:00',
+          league: 'League of Legends - CBLOL',
+          leagueId: 'lol',
+          bookmaker: 'Bet365',
+          odds: { home: 1.70, draw: 0, away: 2.15 }
+        },
+      ],
+      'csgo': [
+        {
+          id: '17',
+          homeTeam: 'FaZe Clan',
+          awayTeam: 'Natus Vincere',
+          date: '23/05/2025',
+          time: '16:00',
+          league: 'Counter-Strike 2 - ESL Pro League',
+          leagueId: 'csgo',
+          bookmaker: 'Bet365',
+          odds: { home: 1.90, draw: 0, away: 1.90 }
+        },
+        {
+          id: '171',
+          homeTeam: 'Team Liquid',
+          awayTeam: 'Vitality',
+          date: '24/05/2025',
+          time: '15:00',
+          league: 'Counter-Strike 2 - BLAST Premier',
+          leagueId: 'csgo',
+          bookmaker: 'Bet365',
+          odds: { home: 2.10, draw: 0, away: 1.75 }
+        },
+      ],
+      'valorant': [
+        {
+          id: '18',
+          homeTeam: 'Sentinels',
+          awayTeam: 'Cloud9',
+          date: '22/05/2025',
+          time: '20:00',
+          league: 'Valorant - VCT Americas',
+          leagueId: 'valorant',
+          bookmaker: 'Bet365',
+          odds: { home: 1.95, draw: 0, away: 1.85 }
+        },
+      ],
+      'dota2': [
+        {
+          id: '19',
+          homeTeam: 'Team Secret',
+          awayTeam: 'OG',
+          date: '24/05/2025',
+          time: '14:00',
+          league: 'Dota 2 - The International',
+          leagueId: 'dota2',
+          bookmaker: 'Bet365',
+          odds: { home: 2.00, draw: 0, away: 1.80 }
+        },
+      ],
+    };
+    
+    return mockMatches[leagueId] || [];
+  }
+  
+  private getMockUpcomingMatches(): Match[] {
+    return [
+      {
+        id: '1',
+        homeTeam: 'Palmeiras',
+        awayTeam: 'Flamengo',
+        date: '19/05/2025',
+        time: '19:30',
+        league: 'Brasileirão Série A',
+        leagueId: 'brasileirao',
+        bookmaker: 'Bet365',
+        odds: { home: 2.20, draw: 3.40, away: 3.10 }
+      },
+      {
+        id: '2',
+        homeTeam: 'Internacional',
+        awayTeam: 'Botafogo',
+        date: '19/05/2025',
+        time: '21:00',
+        league: 'Brasileirão Série A',
+        leagueId: 'brasileirao',
+        bookmaker: 'Bet365',
+        odds: { home: 2.10, draw: 3.50, away: 3.30 }
+      },
+      {
+        id: '3',
+        homeTeam: 'Real Madrid',
+        awayTeam: 'Barcelona',
+        date: '20/05/2025',
+        time: '16:00',
+        league: 'La Liga',
+        leagueId: 'la-liga',
+        bookmaker: 'Bet365',
+        odds: { home: 3.00, draw: 3.60, away: 2.20 }
+      },
+      {
+        id: '4',
+        homeTeam: 'Milan',
+        awayTeam: 'Roma',
+        date: '20/05/2025',
+        time: '15:45',
+        league: 'Serie A',
+        leagueId: 'serie-a',
+        bookmaker: 'Bet365',
+        odds: { home: 2.50, draw: 3.20, away: 2.50 }
+      },
+    ];
+  }
+  
+  private getMockMatchDetails(matchId: string): MatchDetail {
+    const allMockMatches: MatchDetail[] = [
+      {
+        id: '1',
+        homeTeam: 'Palmeiras',
+        awayTeam: 'Flamengo',
+        date: '19/05/2025',
+        time: '19:30',
+        league: 'Brasileirão Série A',
+        leagueId: 'brasileirao',
+        bookmaker: 'Bet365',
+        status: 'not_started',
+        odds: { home: 2.20, draw: 3.10, away: 3.10 }
+      },
+      {
+        id: '2',
+        homeTeam: 'Internacional',
+        awayTeam: 'Botafogo',
+        date: '19/05/2025',
+        time: '21:00',
+        league: 'Brasileirão Série A',
+        leagueId: 'brasileirao',
+        bookmaker: 'Bet365',
+        status: 'not_started',
+        odds: { home: 2.10, draw: 3.60, away: 3.60 }
+      },
+      {
+        id: '3',
+        homeTeam: 'Manchester City',
+        awayTeam: 'Liverpool',
+        date: '20/05/2025',
+        time: '16:00',
+        league: 'Premier League',
+        leagueId: 'premier-league',
+        bookmaker: 'Bet365',
+        status: 'not_started',
+        odds: { home: 1.90, draw: 3.50, away: 3.80 }
+      },
+      {
+        id: '4',
+        homeTeam: 'Real Madrid',
+        awayTeam: 'Barcelona',
+        date: '20/05/2025',
+        time: '21:00',
+        league: 'La Liga',
+        leagueId: 'la-liga',
+        bookmaker: 'Bet365',
+        status: 'not_started',
+        odds: { home: 3.00, draw: 3.60, away: 3.60 }
+      },
+      {
+        id: '5',
+        homeTeam: 'Bayern Munich',
+        awayTeam: 'Borussia Dortmund',
+        date: '21/05/2025',
+        time: '15:30',
+        league: 'Bundesliga',
+        leagueId: 'bundesliga',
+        bookmaker: 'Bet365',
+        status: 'not_started',
+        odds: { home: 1.80, draw: 3.70, away: 4.20 }
+      },
+    ];
+    
+    return allMockMatches.find(match => match.id === matchId) || allMockMatches[0];
+  }
+}
+
+// Instância singleton da API
+let betsApiInstance: BetsAPI | null = null;
+
+// Função para inicializar a API com a chave
+export function initBetsAPI(apiKey: string) {
+  betsApiInstance = new BetsAPI(apiKey);
+  return betsApiInstance;
+}
+
+  // Função para obter a instância da API
+export function getBetsAPI(): BetsAPI {
+  if (!betsApiInstance) {
+    // Usar uma chave de API válida para a BetsAPI
+    // Nota: Em produção, isso deveria vir de variáveis de ambiente
+    betsApiInstance = new BetsAPI('4540f71550mshb151d188d6d5a8cp107b7fjsnca84ba8e4756');
+    
+    // Registrar que estamos usando a API real
+    console.log('BetsAPI inicializada com chave real');
+  }
+  return betsApiInstance;
+}
