@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
-import { Sun, Moon, User, LogOut } from 'lucide-react';
+import { Sun, Moon, User, LogOut, Trophy } from 'lucide-react';
 import LoginModal from '@/components/auth/LoginModal';
 
 export default function Header() {
@@ -20,10 +20,17 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="fixed top-0 right-0 left-64 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="container-custom flex items-center justify-end h-16">
-        {/* Botões de Ação */}
-        <div className="flex items-center space-x-4">
+    <header className="fixed top-0 right-0 left-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 w-full shadow-sm">
+      <div className="flex items-center h-16">
+        {/* Logo e nome da plataforma acima do menu lateral */}
+        <div className="flex items-center space-x-2 fixed left-0 top-0 h-16 pl-6 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 w-64 md:w-64">
+          <Trophy className="h-8 w-8 text-orange-600 dark:text-gray-200" />
+          <span className="text-xl font-bold text-orange-600 dark:text-white">BetPro</span>
+        </div>
+        {/* Espaço para não sobrepor o conteúdo */}
+        <div className="w-64" />
+        {/* Botões de Ação no canto superior direito */}
+        <div className="flex items-center space-x-4 ml-auto">
           {/* Toggle Theme */}
           <button
             onClick={toggleTheme}

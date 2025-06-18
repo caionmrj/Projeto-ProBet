@@ -218,30 +218,30 @@ export default function SportDetailsOrLeagueListPage({ params }: { params: Promi
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 {/* Tabela de Jogos */}
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
                     <thead className="bg-orange-400 dark:bg-gray-800">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Jogo</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Data/Hora</th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Casa</th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Empate</th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Fora</th>
-                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider">Bookmaker</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Jogo</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Data/Hora</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Casa</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Empate</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Fora</th>
+                        <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-black dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Bookmaker</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {matches.map((match: Match) => (
                         <tr key={match.id} className="hover:bg-orange-100 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Link href={`/match/${match.id}?sport_key=${match.sport_key}`} className="text-orange-400 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 font-medium">
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none">
+                            <Link href={`/match/${match.id}?sport_key=${match.sport_key}`} className="text-orange-400 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 font-medium break-words">
                               {match.homeTeam} vs {match.awayTeam}
                             </Link>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{match.date} {match.time}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.home > 0 ? match.odds.home.toFixed(2) : '-'}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.draw !== null && match.odds.draw > 0 ? match.odds.draw.toFixed(2) : '-'}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.away > 0 ? match.odds.away.toFixed(2) : '-'}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">{match.bookmaker}</td>
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">{match.date} {match.time}</td>
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.home > 0 ? match.odds.home.toFixed(2) : '-'}</td>
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.draw !== null && match.odds.draw > 0 ? match.odds.draw.toFixed(2) : '-'}</td>
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.away > 0 ? match.odds.away.toFixed(2) : '-'}</td>
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-[80px] sm:max-w-none break-words">{match.bookmaker}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -280,30 +280,30 @@ export default function SportDetailsOrLeagueListPage({ params }: { params: Promi
           <div className="bg-white rounded-lg shadow overflow-hidden">
             {/* Tabela de Jogos */}
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
                 <thead className="bg-orange-400 dark:bg-gray-800">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Jogo</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Data/Hora</th>
-                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Casa</th>
-                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Empate</th>
-                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Fora</th>
-                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider">Bookmaker</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Jogo</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Data/Hora</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Casa</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Empate</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Fora</th>
+                    <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-orange-400 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Bookmaker</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {matches.map((match: Match) => (
                     <tr key={match.id} className="hover:bg-orange-100 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link href={`/match/${match.id}?sport_key=${match.sport_key}`} className="text-orange-400 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 font-medium">
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none">
+                        <Link href={`/match/${match.id}?sport_key=${match.sport_key}`} className="text-orange-400 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 font-medium break-words">
                           {match.homeTeam} vs {match.awayTeam}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{match.date} {match.time}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.home > 0 ? match.odds.home.toFixed(2) : '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.draw !== null && match.odds.draw > 0 ? match.odds.draw.toFixed(2) : '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.away > 0 ? match.odds.away.toFixed(2) : '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">{match.bookmaker}</td>
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">{match.date} {match.time}</td>
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.home > 0 ? match.odds.home.toFixed(2) : '-'}</td>
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.draw !== null && match.odds.draw > 0 ? match.odds.draw.toFixed(2) : '-'}</td>
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center font-medium text-gray-900 dark:text-white">{match.odds.away > 0 ? match.odds.away.toFixed(2) : '-'}</td>
+                      <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 whitespace-nowrap text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-[80px] sm:max-w-none break-words">{match.bookmaker}</td>
                     </tr>
                   ))}
                 </tbody>

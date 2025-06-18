@@ -30,9 +30,9 @@ export default function RootLayout({
             <SearchProvider>
               <div className="min-h-screen">
                 <Header />
-                <div className="flex">
+                <div className="flex flex-col md:flex-row">
                   <Sidebar />
-                  <main className="flex-1 ml-64 p-8">
+                  <main className="flex-1 p-4 md:ml-64 md:p-8">
                     {children}
                   </main>
                 </div>

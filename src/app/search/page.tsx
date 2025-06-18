@@ -24,8 +24,6 @@ function SearchPageContent() {
         const query = searchParams.get('q');
         if (query) {
             setIsSearching(true);
-            // Aqui você pode implementar a lógica de busca real
-            // Por enquanto, vamos apenas simular uma busca
             setTimeout(() => {
                 setResults([
                     { id: 1, title: 'Futebol', type: 'sport', slug: 'soccer' },
@@ -47,8 +45,8 @@ function SearchPageContent() {
                     Buscando resultados para: {searchQuery}
                 </h1>
                 <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full max-w-[75%] mb-4"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full max-w-[50%]"></div>
                 </div>
             </div>
         );
@@ -62,7 +60,7 @@ function SearchPageContent() {
 
             {results.length === 0 ? (
                 <div className="text-center py-12">
-                    <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <Trophy className="w-full max-w-[48px] h-full max-h-[48px] text-gray-400 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                         Nenhum resultado encontrado
                     </h2>
@@ -79,7 +77,7 @@ function SearchPageContent() {
                             className="card hover:shadow-lg transition-shadow duration-200"
                         >
                             <div className="flex items-center space-x-4">
-                                <Trophy className="w-8 h-8 text-green-600 dark:text-green-500" />
+                                <Trophy className="w-full max-w-[32px] h-full max-h-[32px] text-green-600 dark:text-green-500" />
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                         {result.title}
